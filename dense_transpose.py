@@ -8,28 +8,39 @@ def main(argc, argv):
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
-    local_a = []
 
     if rank == 0:
-	matrix_file = open(argv[1], "rt")
+        data = [(i+1)**2 for i in range(size)]
+        matrix_file = open(argv[1], "rt")
 	
 	dimension = matrix_file.readline().strip().split()
-        row_total = dimension[0]
-	col_total = dimension[1]
-	i = 0
+        #row_total = dimension[0]
+	#col_total = dimension[1]
         
-	for row in matrix_file:
-            row = row.strip().split()
-            row = comm.Scatter(row, local_a[i], root=0)
-            i = i + 1
+        data = matrix_file.readline().strip().split()
+        data1 = matrix_file.readline().strip().split()
+        data2 = matrix_file.readline().strip().split()
+        data3 = matrix_file.readline().strip().split()
+	#for row in matrix_file:
+        #    row = row.strip().split()
+        #    row = comm.Scatter(row[0:10], local_a[:], root=0)
         
-        print("Process 0 has " + local_a)
         comm.Barrier() 
-        matrix_file.close()
     else:
-        comm.Barrier()
-	print("I am process " + str(rank) + " and I have " + str(local_a))
+        data = None
+        data1 = None
+        data2 = None
+        data3 = None
+        comm.Barrier()	
 
+    data = comm.scatter(data, root=0)
+    data1 = comm.scatter(data1, root=0)
+    data2 = comm.scatter(data2, root=0)
+    data3 = comm.scatter(data3, root=0)
+
+    wow = [data, data1, data2, data3]
+
+    print("I am process " + str(rank) + " and I have " + str(wow))
 
 if __name__ == "__main__":
     main(len(sys.argv), sys.argv)
