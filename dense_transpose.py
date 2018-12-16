@@ -1,6 +1,6 @@
 import os
 import sys
-#from numpy import transpose
+import numpy as np
 from mpi4py import MPI
 
 
@@ -13,13 +13,14 @@ def main(argc, argv):
 	matrix_file = open(argv[1], "rt")
 	
 	dimension = matrix_file.readline().strip().split()
-	row_total = dimension[0]
+        row_total = dimension[0]
 	col_total = dimension[1]
 	
-	print("Matrix from " + argv[1] + ": ")
 	for row in matrix_file:
-	    print(row.strip())
-	
+            row = row.strip().split()
+            row = np.asarray(row, dtype=np.int32)
+            row = comm.Scatter(row[0:], row[:9], root=0)
+
 	matrix_file.close()
     else:
 	print("I am process " + str(rank))
