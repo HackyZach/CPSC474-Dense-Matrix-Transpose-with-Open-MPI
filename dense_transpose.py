@@ -1,6 +1,6 @@
 import os
 import sys
-import numpy as np
+#import numpy as np
 from mpi4py import MPI
 
 
@@ -8,6 +8,7 @@ def main(argc, argv):
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
+    local_a = []
 
     if rank == 0:
 	matrix_file = open(argv[1], "rt")
@@ -15,15 +16,19 @@ def main(argc, argv):
 	dimension = matrix_file.readline().strip().split()
         row_total = dimension[0]
 	col_total = dimension[1]
-	
+	i = 0
+        
 	for row in matrix_file:
             row = row.strip().split()
-            row = np.asarray(row, dtype=np.int32)
-            row = comm.Scatter(row[0:], row[:9], root=0)
-
-	matrix_file.close()
+            row = comm.Scatter(row, local_a[i], root=0)
+            i = i + 1
+        
+        print("Process 0 has " + local_a)
+        comm.Barrier() 
+        matrix_file.close()
     else:
-	print("I am process " + str(rank))
+        comm.Barrier()
+	print("I am process " + str(rank) + " and I have " + str(local_a))
 
 
 if __name__ == "__main__":
